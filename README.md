@@ -30,8 +30,8 @@ Revenue and Claims Query
 
 ``
 SELECT TOP(10)
-	  CLM_DRG_CD,
-	  COUNT(CLM_ID) AS Total_Claims,
+CLM_DRG_CD,
+COUNT(CLM_ID) AS Total_Claims,
 	  SUM(CLM_PMT_AMT) AS Total_Paid_Amount,
 	  AVG(CLM_PMT_AMT) AS Avg_Paid_Amount,
       SUM(CASE WHEN CLM_PMT_AMT = 0 THEN 1 ELSE 0 END) AS Unpaid_Claims_Count,
