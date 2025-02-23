@@ -27,7 +27,7 @@ To evaluate revenue collection and claim statuses, I used SQL techniques like CA
 
 
 Revenue and Claims Query
-``sql
+sql``
 SELECT TOP(10)
 	  CLM_DRG_CD,
 	  COUNT(CLM_ID) AS Total_Claims,
@@ -63,7 +63,7 @@ To predict cash flow trends, I created a Common Table Expression (CTE) using the
 
 
 Forecast Query
-``sql
+sql``
 WITH Revenue_Trends AS ( 
 SELECT
 	YEAR(CLM_THRU_DT) AS Year,
