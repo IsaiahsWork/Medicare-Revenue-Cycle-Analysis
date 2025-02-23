@@ -27,7 +27,8 @@ To evaluate revenue collection and claim statuses, I used SQL techniques like CA
 
 
 Revenue and Claims Query
-sql``
+
+``
 SELECT TOP(10)
 	  CLM_DRG_CD,
 	  COUNT(CLM_ID) AS Total_Claims,
@@ -39,8 +40,7 @@ SELECT TOP(10)
  FROM [SqlProjects].[dbo].[DE1_0_2008_to_2010_Inpatient_Claims_Sample_2]
  GROUP BY CLM_DRG_CD
  ORDER BY Total_Paid_Amount DESC
- ``sql
-
+ ``
 
 
 Revenue and Claims Results
@@ -63,7 +63,8 @@ To predict cash flow trends, I created a Common Table Expression (CTE) using the
 
 
 Forecast Query
-sql``
+
+``
 WITH Revenue_Trends AS ( 
 SELECT
 	YEAR(CLM_THRU_DT) AS Year,
@@ -85,7 +86,7 @@ SELECT
 	ROUND((Total_Collected + (Total_Collected - Prev_Month_Revenue)),2) AS Next_Month_Forecast
 	FROM Revenue_Trends
 	ORDER BY Year ASC;
- ``sql
+ ``
 
 
 Forecast Query
