@@ -27,6 +27,19 @@ To evaluate revenue collection and claim statuses, I used SQL techniques like CA
 
 
 Revenue and Claims Query
+``sql
+SELECT TOP(10)
+	  CLM_DRG_CD,
+	  COUNT(CLM_ID) AS Total_Claims,
+	  SUM(CLM_PMT_AMT) AS Total_Paid_Amount,
+	  AVG(CLM_PMT_AMT) AS Avg_Paid_Amount,
+      SUM(CASE WHEN CLM_PMT_AMT = 0 THEN 1 ELSE 0 END) AS Unpaid_Claims_Count,
+	  SUM(CASE WHEN CLM_PMT_AMT > 0 THEN CLM_PMT_AMT ELSE 0 END) AS Total_Collected,
+	  SUM(CASE WHEN CLM_PMT_AMT = 0 THEN NCH_PRMRY_PYR_CLM_PD_AMT ELSE 0 END) AS Primary_Payer_Contributions 
+ FROM [SqlProjects].[dbo].[DE1_0_2008_to_2010_Inpatient_Claims_Sample_2]
+ GROUP BY CLM_DRG_CD
+ ORDER BY Total_Paid_Amount DESC
+ ``sql
 
 
 
@@ -50,7 +63,29 @@ To predict cash flow trends, I created a Common Table Expression (CTE) using the
 
 
 Forecast Query
-
+``sql
+WITH Revenue_Trends AS ( 
+SELECT
+	YEAR(CLM_THRU_DT) AS Year,
+	MONTH(CLM_THRU_DT) AS Month,
+	SUM(CLM_PMT_AMT) AS Total_Collected,
+	LAG(SUM(CLM_PMT_AMT)) OVER (ORDER BY YEAR(CLM_THRU_DT), MONTH(CLM_THRU_DT)) AS Prev_Month_Revenue
+FROM [SqlProjects].[dbo].[DE1_0_2008_to_2010_Inpatient_Claims_Sample_2]
+WHERE CLM_PMT_AMT > 0
+AND CLM_THRU_DT IS NOT NULL
+GROUP BY YEAR(CLM_THRU_DT), MONTH(CLM_THRU_DT)
+)
+SELECT
+	Year,
+	Month,
+	Total_Collected,
+	Prev_Month_Revenue,
+	(Total_Collected - Prev_Month_Revenue) AS Month_Over_Month_Change,
+	ROUND(AVG(Total_Collected) OVER (ORDER BY Year, Month ROWS BETWEEN 5 PRECEDING AND CURRENT ROW),2) as Moving_Avg_6_Months,
+	ROUND((Total_Collected + (Total_Collected - Prev_Month_Revenue)),2) AS Next_Month_Forecast
+	FROM Revenue_Trends
+	ORDER BY Year ASC;
+ ``sql
 
 
 Forecast Query
