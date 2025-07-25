@@ -1,116 +1,144 @@
-# Medicare-Revenue-Cycle-Analysis
+# 🏥 Medicare Revenue Cycle Analysis (2008–2010)
 
-The healthcare revenue cycle is critical for financial sustainability, ensuring timely reimbursements and reducing bad debt. By analyzing hospital billing data, we can identify payment delays, improve collections, and optimize revenue flow.
+The healthcare revenue cycle is critical for financial sustainability—ensuring timely reimbursements, minimizing bad debt, and optimizing operational cash flow. This SQL-based project analyzes Medicare billing claims data between 2008–2010 to uncover trends, detect payment delays, and forecast future revenue behavior.
 
-📊 What I Analyzed
+---
 
-For this analysis, I focused on key financial metrics within the hospital billing system:
+## 📦 Dataset Overview
 
-✔️ Total Revenue Collected – Understanding actual hospital revenue. 
+The DE-SynPUF inpatient claims dataset simulates realistic Medicare claim data while preserving HIPAA compliance. It spans 2008–2010 and contains key fields:
 
-✔️ Unpaid Claims (Possible Denials) – Identifying gaps in payments. 
+| Column Name                   | Description                  |
+| ----------------------------- | ---------------------------- |
+| CLM\_ID                       | Claim Identifier             |
+| CLM\_THRU\_DT                 | Claim End Date               |
+| CLM\_PMT\_AMT                 | Claim Payment Amount         |
+| CLM\_DRG\_CD                  | Diagnosis Related Group Code |
+| NCH\_PRMRY\_PYR\_CLM\_PD\_AMT | Primary Payer Contribution   |
+| CLM\_ADMSN\_DT                | Admission Date               |
+| ICD9\_DGNS\_CD\_x             | Diagnosis Codes              |
+| HCPCS\_CD\_x                  | Procedure Codes              |
 
-✔️ Primary Payer Contributions – Evaluating the role of insurers and Medicare. 
+---
 
-✔️ Average Payment Per Claim – Essential for forecasting and financial planning. 
+## 🔍 Analysis Objectives
 
-✔️ Monthly Revenue Trends – Detecting seasonality and cash flow fluctuations.
+✔️ **Total Revenue Collected** – How much was paid overall
+✔️ **Unpaid Claims (Denials)** – Identifying volume of non-reimbursed claims
+✔️ **Primary Payer Contributions** – Detecting insurer/Medicare involvement
+✔️ **Average Payment Per Claim** – Forecasting and cost benchmarking
+✔️ **Monthly Revenue Trends** – Seasonality & operational planning
+✔️ **Forecasting** – SQL-based cash flow prediction
 
-Let's take a look at the data:
+---
 
-The dataset was retrieved from here and covers two years (2008-2010) of billing data from Medicare and Medicaid services. The DE-SynPUF dataset was designed to provide realistic claims data while safeguarding Medicare beneficiaries' protected health information. Key variables include Claims Date, Admission Date, Claim Payment Amount, Provider Institution, Diagnosis Code, among others.
+## 🧪 Revenue and Claims Breakdown
 
+### ✅ Query Used:
 
-Table
-
-To evaluate revenue collection and claim statuses, I used SQL techniques like CASE WHEN to classify claims, the SUM aggregation to find the total claim amount for each category and then used the COUNT aggregation to evaluate the amount of Total Claims.
-
-
-
-Revenue and Claims Query
-
-``
+```sql
 SELECT TOP(10)
-CLM_DRG_CD,
-COUNT(CLM_ID) AS Total_Claims,
-	  SUM(CLM_PMT_AMT) AS Total_Paid_Amount,
-	  AVG(CLM_PMT_AMT) AS Avg_Paid_Amount,
-      SUM(CASE WHEN CLM_PMT_AMT = 0 THEN 1 ELSE 0 END) AS Unpaid_Claims_Count,
-	  SUM(CASE WHEN CLM_PMT_AMT > 0 THEN CLM_PMT_AMT ELSE 0 END) AS Total_Collected,
-	  SUM(CASE WHEN CLM_PMT_AMT = 0 THEN NCH_PRMRY_PYR_CLM_PD_AMT ELSE 0 END) AS Primary_Payer_Contributions 
- FROM [SqlProjects].[dbo].[DE1_0_2008_to_2010_Inpatient_Claims_Sample_2]
- GROUP BY CLM_DRG_CD
- ORDER BY Total_Paid_Amount DESC
- ``
-
-
-Revenue and Claims Results
-
-Using ORDER BY on the Diagnosis Related Group Code (DRG Code), I identified which illnesses resulted in the highest total paid amounts and how many claims remained unpaid. If the Total Collected amount matches the Total Paid Amount, this suggests full reimbursement. Most claims appear to be fully collected without additional contributions from primary payers, indicating efficient payment processing for those claims.
-
-📅 Monthly Revenue Trends
-
-Next, I analyzed the Monthly Revenue Trends. Understanding monthly revenue trends helps identify seasonal patterns and predict cash flow. I filtered date data using the CLM_THRU_DT column (end of claim), by YEAR and MONTH time functions and NOT NULL to exclude all missing dates.
-
-
-Monthly Revenue Trends Query
-
-
-
-Monthly Revenue Trends Results
-
-Findings from Monthly Revenue Trends
-
-Revenue fluctuates within a narrow range (~$20M to $24M per month).
-December ($23M) has one of the highest revenues, likely due to: Seasonal trends in healthcare (e.g., flu season, elective surgeries) impact revenue collection patterns.
-
-To predict cash flow trends, I created a Common Table Expression (CTE) using the LAG function to retrieve the previous month’s revenue for comparison.
-
-
-Forecast Query
-
-``
-WITH Revenue_Trends AS ( 
-SELECT
-	YEAR(CLM_THRU_DT) AS Year,
-	MONTH(CLM_THRU_DT) AS Month,
-	SUM(CLM_PMT_AMT) AS Total_Collected,
-	LAG(SUM(CLM_PMT_AMT)) OVER (ORDER BY YEAR(CLM_THRU_DT), MONTH(CLM_THRU_DT)) AS Prev_Month_Revenue
+  CLM_DRG_CD,
+  COUNT(CLM_ID) AS Total_Claims,
+  SUM(CLM_PMT_AMT) AS Total_Paid_Amount,
+  AVG(CLM_PMT_AMT) AS Avg_Paid_Amount,
+  SUM(CASE WHEN CLM_PMT_AMT = 0 THEN 1 ELSE 0 END) AS Unpaid_Claims_Count,
+  SUM(CASE WHEN CLM_PMT_AMT > 0 THEN CLM_PMT_AMT ELSE 0 END) AS Total_Collected,
+  SUM(CASE WHEN CLM_PMT_AMT = 0 THEN NCH_PRMRY_PYR_CLM_PD_AMT ELSE 0 END) AS Primary_Payer_Contributions
 FROM [SqlProjects].[dbo].[DE1_0_2008_to_2010_Inpatient_Claims_Sample_2]
-WHERE CLM_PMT_AMT > 0
-AND CLM_THRU_DT IS NOT NULL
+GROUP BY CLM_DRG_CD
+ORDER BY Total_Paid_Amount DESC;
+```
+
+📷 *Refer to Image 2 (Revenue and Claims Query)*
+
+### 📊 Results:
+
+📷 *Refer to Image 3 (Claims Results)*
+
+* Most top-paid claims were fully reimbursed by Medicare.
+* Minimal contribution required from primary payers.
+* Indicates efficient reimbursement processing in high-cost DRG codes.
+
+---
+
+## 📅 Monthly Revenue Trends
+
+### ✅ Query Used:
+
+```sql
+SELECT
+  YEAR(CLM_THRU_DT) AS Year,
+  MONTH(CLM_THRU_DT) AS Month,
+  SUM(CLM_PMT_AMT) AS Total_Collected
+FROM [SqlProjects].[dbo].[DE1_0_2008_to_2010_Inpatient_Claims_Sample_2]
+WHERE CLM_PMT_AMT > 0 AND CLM_THRU_DT IS NOT NULL
 GROUP BY YEAR(CLM_THRU_DT), MONTH(CLM_THRU_DT)
+ORDER BY Year, Month;
+```
+
+📷 *Refer to Image 4 (Monthly Revenue Trends Query)*
+
+### 📊 Results:
+
+📷 *Refer to Image 5 (Monthly Revenue Trends Results)*
+
+* Revenue fluctuated between **\$20M and \$24M per month**.
+* **December consistently spiked**, likely due to flu season and end-of-year procedures.
+* **May 2009** saw the **highest monthly revenue at \$23.1M**.
+
+---
+
+## 📈 Forecasting Future Revenue
+
+### ✅ Query Used:
+
+```sql
+WITH Revenue_Trends AS (
+  SELECT
+    YEAR(CLM_THRU_DT) AS Year,
+    MONTH(CLM_THRU_DT) AS Month,
+    SUM(CLM_PMT_AMT) AS Total_Collected,
+    LAG(SUM(CLM_PMT_AMT)) OVER (ORDER BY YEAR(CLM_THRU_DT), MONTH(CLM_THRU_DT)) AS Prev_Month_Revenue
+  FROM [SqlProjects].[dbo].[DE1_0_2008_to_2010_Inpatient_Claims_Sample_2]
+  WHERE CLM_PMT_AMT > 0 AND CLM_THRU_DT IS NOT NULL
+  GROUP BY YEAR(CLM_THRU_DT), MONTH(CLM_THRU_DT)
 )
 SELECT
-	Year,
-	Month,
-	Total_Collected,
-	Prev_Month_Revenue,
-	(Total_Collected - Prev_Month_Revenue) AS Month_Over_Month_Change,
-	ROUND(AVG(Total_Collected) OVER (ORDER BY Year, Month ROWS BETWEEN 5 PRECEDING AND CURRENT ROW),2) as Moving_Avg_6_Months,
-	ROUND((Total_Collected + (Total_Collected - Prev_Month_Revenue)),2) AS Next_Month_Forecast
-	FROM Revenue_Trends
-	ORDER BY Year ASC;
- ``
+  Year,
+  Month,
+  Total_Collected,
+  Prev_Month_Revenue,
+  (Total_Collected - Prev_Month_Revenue) AS Month_Over_Month_Change,
+  ROUND(AVG(Total_Collected) OVER (ORDER BY Year, Month ROWS BETWEEN 5 PRECEDING AND CURRENT ROW), 2) AS Moving_Avg_6_Months,
+  ROUND((Total_Collected + (Total_Collected - Prev_Month_Revenue)), 2) AS Next_Month_Forecast
+FROM Revenue_Trends
+ORDER BY Year, Month;
+```
 
+📷 *Refer to Image 6 (Forecast Query)*
 
-Forecast Query
+### 📊 Results:
 
-Findings from Revenue Forecasting
-2009 showed stable revenue (between $18M - $23M).
-The highest revenue month was May 2009 ($23.1M).
-2010 saw a steep decline, indicating potential financial concerns.
+📷 *Refer to Image 7 (Forecast Results)*
 
-🔑 Key Takeaways
+* Revenue in **2009 was stable** (\$18M–\$23M/month).
+* A **decline in 2010** suggests potential operational or economic issues.
+* SQL forecasting highlighted downturns early, helping with cash flow planning.
 
-✔️ Delayed Payments Affect Cash Flow – A significant portion of claims remain unpaid, indicating possible denials or processing issues. 
+---
 
-✔️ Primary Payers Drive Revenue – Medicare, Medicaid, and insurers contribute the bulk of payments, underscoring their impact on financial health. 
+## 🔑 Key Takeaways
 
-✔️ Revenue is Seasonal – Payment trends fluctuate, requiring proactive financial planning. 
+* 💸 **Delayed Payments Affect Cash Flow** – Some claims show \$0 reimbursement
+* 🏥 **Primary Payers Drive Revenue** – Medicare accounts for most payments
+* 📈 **Revenue is Seasonal** – Higher in December due to flu/elective surgery surges
+* 🔮 **Forecasting Enables Planning** – SQL-based models support financial foresight
 
-✔️ Forecasting Improves Planning – SQL analytics help predict cash flow and optimize hospital financial management.
+---
 
-📢 Final Thoughts
+## 📢 Final Thoughts
 
-Analyzing healthcare billing data with SQL provides valuable insights into revenue performance, payment trends, and areas for improvement. As I continue refining my analytical skills, I welcome feedback and discussions—feel free to connect!
+SQL-powered analysis of the Medicare revenue cycle can uncover inefficiencies, support better planning, and aid in denial management. This project demonstrates how structured claims data can be transformed into actionable insights for financial leadership in healthcare.
+
+**Let’s connect** – [LinkedIn](https://linkedin.com) | [Portfolio](https://yourportfolio.com)
