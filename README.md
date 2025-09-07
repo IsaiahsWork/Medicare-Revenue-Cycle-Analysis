@@ -1,6 +1,11 @@
 # 🏥 Medicare Revenue Cycle Analysis (2008–2010)
 
-The healthcare revenue cycle is critical for financial sustainability—ensuring timely reimbursements, minimizing bad debt, and optimizing operational cash flow. This SQL-based project analyzes Medicare billing claims data between 2008–2010 to uncover trends, detect payment delays, and forecast future revenue behavior.
+The healthcare revenue cycle is critical for financial sustainability—ensuring timely reimbursements, minimizing bad debt, and optimizing operational cash flow. This SQL-based project analyzes Medicare billing claims data between 2008–2010 to uncover trends, detect payment delays, and forecast future revenue behavior. 
+
+📂 Data Source  
+This project uses the DE-SynPUF Medicare inpatient claims dataset (2008–2010) provided by CMS.  
+Full dataset available in `Data Source` file.  
+More details: [Data Source link](https://www.cms.gov/data-research/statistics-trends-and-reports/medicare-claims-synthetic-public-use-files/cms-2008-2010-data-entrepreneurs-synthetic-public-use-file-de-synpuf)
 
 ---
 
